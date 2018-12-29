@@ -900,11 +900,18 @@ class UpnpFactory:
         'uuid': str,
     }
 
-    def __init__(self, requester, disable_state_variable_validation=False):
-        """Initializer."""
+    def __init__(self, requester, disable_state_variable_validation=False, sparse_device=False):
+        """
+        Initializer.
+
+        :param disable_state_variable_validation Disable state variable value validation.
+        :param sparse_device Do not initialize services. Used in case only information about the
+                             device itself is required.
+        """
         self.requester = requester
         self._properties = {
             'disable_state_variable_validation': disable_state_variable_validation,
+            'sparse_device': sparse_device,
         }
 
     async def async_create_device(self, description_url: str) -> UpnpDevice:
@@ -916,9 +923,10 @@ class UpnpFactory:
 
         # get services
         services = []
-        for service_desc_xml in root.findall('.//device:serviceList/device:service', NS):
-            service = await self.async_create_service(service_desc_xml, description_url)
-            services.append(service)
+        if not self._properties['sparse_device']:
+            for service_desc_xml in root.findall('.//device:serviceList/device:service', NS):
+                service = await self.async_create_service(service_desc_xml, description_url)
+                services.append(service)
 
         return UpnpDevice(self.requester, device_desc, services, root)
 

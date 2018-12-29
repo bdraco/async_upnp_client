@@ -88,6 +88,16 @@ class TestUpnpStateVariable:
         assert argument
 
     @pytest.mark.asyncio
+    async def test_sparse_device(self):
+        r = UpnpTestRequester(RESPONSE_MAP)
+        factory = UpnpFactory(r, sparse_device=True)
+        device = await factory.async_create_device('http://localhost:1234/dmr')
+        assert device
+
+        service = device.service('urn:schemas-upnp-org:service:RenderingControl:1')
+        assert not service
+
+    @pytest.mark.asyncio
     async def test_init_xml(self):
         r = UpnpTestRequester(RESPONSE_MAP)
         factory = UpnpFactory(r)
