@@ -95,6 +95,21 @@ class CaseInsensitiveDict(abcMutableMapping):
         return hash(tuple(sorted(self._data.items())))
 
 
+def combined_case_insensitive_dict(
+    dict1: Optional[CaseInsensitiveDict], dict2: Optional[CaseInsensitiveDict]
+) -> CaseInsensitiveDict:
+    """Return the combination of two CaseInsensitiveDicts."""
+    new_dict = CaseInsensitiveDict()
+    if dict1 and dict2:
+        new_dict._data = {**dict1._data, **dict2._data}
+        new_dict._case_map = {**dict1._case_map, **dict2._case_map}
+    elif dict1 or dict2:
+        target = dict1 if dict1 else dict2
+        new_dict._data = {**target._data}
+        new_dict._case_map = {**target._case_map}
+    return new_dict
+
+
 def time_to_str(time: timedelta) -> str:
     """Convert timedelta to str/units."""
     total_seconds = abs(time.total_seconds())
