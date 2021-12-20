@@ -41,6 +41,38 @@ def test_case_insensitive_dict_dict_equality() -> None:
     assert ci_dict == {"KEY": "value"}
 
 
+def test_case_insensitive_dict_merge() -> None:
+    """Test CaseInsensitiveDict against dict equality."""
+    ci_dict = CaseInsensitiveDict()
+    ci_dict["Key"] = "valueold"
+    assert len(ci_dict._data) == 1
+    assert len(ci_dict._case_map) == 1
+    ci_dict.merge({"key": "value"})
+    assert len(ci_dict._data) == 1
+    assert len(ci_dict._case_map) == 1
+    assert ci_dict == {"Key": "value"}
+    assert ci_dict == {"key": "value"}
+    assert ci_dict == {"KEY": "value"}
+    ci_dict.merge({"key": "newvalue"})
+    assert len(ci_dict._data) == 1
+    assert len(ci_dict._case_map) == 1
+    assert ci_dict == {"Key": "newvalue"}
+    assert ci_dict == {"key": "newvalue"}
+    assert ci_dict == {"KEY": "newvalue"}
+    ci_dict.merge({"KEY": "newvalue"})
+    assert len(ci_dict._data) == 1
+    assert len(ci_dict._case_map) == 1
+    assert ci_dict == {"Key": "newvalue"}
+    assert ci_dict == {"key": "newvalue"}
+    assert ci_dict == {"KEY": "newvalue"}
+    ci_dict.merge(CaseInsensitiveDict({"kEy": "Final"}))
+    assert len(ci_dict._data) == 1
+    assert len(ci_dict._case_map) == 1
+    assert ci_dict == {"Key": "Final"}
+    assert ci_dict == {"key": "Final"}
+    assert ci_dict == {"KEY": "Final"}
+
+
 def test_case_insensitive_dict_profile() -> None:
     """Test CaseInsensitiveDict under load, for profiling."""
     for _ in range(0, 10000):
