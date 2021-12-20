@@ -27,6 +27,27 @@ class CaseInsensitiveDict(abcMutableMapping):
         self._data: Dict[str, Any] = {**(data or {}), **kwargs}
         self._case_map: Dict[str, Any] = {k.lower(): k for k in self._data}
 
+    def merge(self, data: Optional[abcMapping] = None) -> None:
+        if not data:
+            return
+        if isinstance(data, CaseInsensitiveDict):
+            source_data: Dict[str, Any] = data._data
+            source_case_map: Dict[str, Any] = data._case_map
+        else:
+            source_data = data
+            source_case_map = {k.lower(): k for k in data}
+
+        changed_case = [
+            k
+            for k, case in source_case_map.items()
+            if k in self._case_map and self._case_map[k] != case
+        ]
+        self._data.update(source_data)
+        self._case_map.update(source_case_map)
+        if changed_case:
+            for k in changed_case:
+                del self._data[k]
+
     def as_dict(self) -> Dict[str, Any]:
         """Return the underlying dict without iterating."""
         return self._data
@@ -93,21 +114,6 @@ class CaseInsensitiveDict(abcMutableMapping):
     def __hash__(self) -> int:
         """Get hash."""
         return hash(tuple(sorted(self._data.items())))
-
-
-def combined_case_insensitive_dict(
-    dict1: Optional[CaseInsensitiveDict], dict2: Optional[CaseInsensitiveDict]
-) -> CaseInsensitiveDict:
-    """Return the combination of two CaseInsensitiveDicts."""
-    new_dict = CaseInsensitiveDict()
-    if dict1 and dict2:
-        new_dict._data = {**dict1._data, **dict2._data}
-        new_dict._case_map = {**dict1._case_map, **dict2._case_map}
-    elif dict1 or dict2:
-        target = dict1 if dict1 else dict2
-        new_dict._data = {**target._data}
-        new_dict._case_map = {**target._case_map}
-    return new_dict
 
 
 def time_to_str(time: timedelta) -> str:
