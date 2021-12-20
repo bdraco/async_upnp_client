@@ -39,9 +39,9 @@ class CaseInsensitiveDict(abcMutableMapping):
             source_case_map = {k.lower(): k for k in data}
 
         changed_case = [
-            case
-            for k, case in self._case_map.items()
-            if k in source_case_map and source_case_map[k] != case
+            self._case_map[k]
+            for k in (self._case_map.keys() & source_case_map.keys())
+            if k in source_case_map and source_case_map[k] != self._case_map[k]
         ]
         self._data.update(source_data)
         self._case_map.update(source_case_map)
