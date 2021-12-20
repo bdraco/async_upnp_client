@@ -1,6 +1,7 @@
 """SSDP Search + Advertisement listener, keeping track of known devices on the network."""
 
 import logging
+from pprint import pp
 import re
 from asyncio.events import AbstractEventLoop
 from datetime import datetime, timedelta
@@ -112,19 +113,14 @@ class SsdpDevice:
     ) -> SsdpHeaders:
         """Get headers from search and advertisement for a given device- or service type."""
         if device_or_service_type in self.search_headers:
-            search_headers = self.search_headers[device_or_service_type].as_dict()
+            headers = {**self.search_headers[device_or_service_type].as_dict()}
         else:
-            search_headers = {}
-        if device_or_service_type in self.search_headers:
-            advertisement_headers = self.advertisement_headers[
-                device_or_service_type
-            ].as_dict()
-        else:
-            advertisement_headers = {}
-        headers = CaseInsensitiveDict({**search_headers, **advertisement_headers})
+            headers = {}
+        if device_or_service_type in self.advertisement_headers:
+            headers.update(self.advertisement_headers[device_or_service_type].as_dict())
         if "_source" in headers:
             del headers["_source"]
-        return headers
+        return CaseInsensitiveDict(headers)
 
     @property
     def all_combined_headers(self) -> Mapping[DeviceOrServiceType, SsdpHeaders]:
