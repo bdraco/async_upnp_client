@@ -28,6 +28,7 @@ class CaseInsensitiveDict(abcMutableMapping):
         self._case_map: Dict[str, Any] = {k.lower(): k for k in self._data}
 
     def merge(self, data: Optional[abcMapping] = None) -> None:
+        """Merge a mapping or CaseInsensitiveDict into a CaseInsensitiveDict."""
         if not data:
             return
         if isinstance(data, CaseInsensitiveDict):
