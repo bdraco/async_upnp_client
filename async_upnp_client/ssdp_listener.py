@@ -116,9 +116,11 @@ class SsdpDevice:
         else:
             search_headers = {}
         if device_or_service_type in self.search_headers:
-            advertisement_headers = self.advertisement_headers[device_or_service_type].as_dict()
+            advertisement_headers = self.advertisement_headers[
+                device_or_service_type
+            ].as_dict()
         else:
-            advertisement_headers = {}            
+            advertisement_headers = {}
         headers = CaseInsensitiveDict({**search_headers, **advertisement_headers})
         if "_source" in headers:
             del headers["_source"]
