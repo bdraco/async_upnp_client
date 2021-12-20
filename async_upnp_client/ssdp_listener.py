@@ -111,9 +111,15 @@ class SsdpDevice:
         device_or_service_type: DeviceOrServiceType,
     ) -> SsdpHeaders:
         """Get headers from search and advertisement for a given device- or service type."""
-        headers = CaseInsensitiveDict()
-        headers.merge(self.search_headers.get(device_or_service_type))
-        headers.merge(self.advertisement_headers.get(device_or_service_type))
+        if device_or_service_type in self.search_headers:
+            search_headers = self.search_headers[device_or_service_type].as_dict()
+        else:
+            search_headers = {}
+        if device_or_service_type in self.search_headers:
+            advertisement_headers = self.advertisement_headers[device_or_service_type].as_dict()
+        else:
+            advertisement_headers = {}            
+        headers = CaseInsensitiveDict({**search_headers, **advertisement_headers})
         if "_source" in headers:
             del headers["_source"]
         return headers
