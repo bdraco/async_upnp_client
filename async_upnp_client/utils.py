@@ -94,10 +94,10 @@ class CaseInsensitiveDict(abcMutableMapping):
         return self._data.get(self._case_map.get(lower_key, _SENTINEL), default)
 
     def replace(self, new_data: abcMapping) -> None:
-        """Replace the underlying dict."""
+        """Replace the underlying dict without making a copy if possible."""
         if isinstance(new_data, CaseInsensitiveDict):
-            self._data = new_data.as_dict().copy()
-            self._case_map = new_data.case_map().copy()
+            self._data = new_data.as_dict()
+            self._case_map = new_data.case_map()
         else:
             self._data = {**new_data}
             self._case_map = {
