@@ -170,7 +170,23 @@ class SsdpDevice:
         self,
         device_or_service_type: DeviceOrServiceType,
     ) -> CaseInsensitiveDict:
-        """Get headers from search and advertisement for a given device- or service type."""
+        """Get headers from search and advertisement for a given device- or service type.
+        
+        If there are both search and advertisement headers, 
+        the search headers are combined with the advertisement headers and a new
+        CaseInsensitiveDict is returned.
+
+        If there are only search headers, the search headers are returned.
+
+        If there are only advertisement headers, the advertisement headers are returned.
+
+        If there are no headers, an empty CaseInsensitiveDict is returned.
+
+        Callers should be aware that the returned CaseInsensitiveDict may be a view
+        into the internal data structures of this class. If the caller modifies the
+        returned CaseInsensitiveDict, the internal data structures will be modified
+        as well.
+        """
         search_headers = self.search_headers.get(device_or_service_type, _SENTINEL)
         advertisement_headers = self.advertisement_headers.get(
             device_or_service_type, _SENTINEL
