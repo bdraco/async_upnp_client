@@ -167,14 +167,13 @@ class SsdpDevice:
         )
         if search_headers is not _SENTINEL and advertisement_headers is not _SENTINEL:
             header_dict = search_headers.combine(advertisement_headers)
-        elif search_headers is not _SENTINEL:
-            header_dict = search_headers.copy()
-        elif advertisement_headers is not _SENTINEL:
-            header_dict = advertisement_headers.copy()
-        else:
-            return CaseInsensitiveDict()
-        del header_dict["_source"]
-        return header_dict
+            del header_dict["_source"]
+            return header_dict
+        if search_headers is not _SENTINEL:
+            return search_headers
+        if advertisement_headers is not _SENTINEL:
+            return advertisement_headers
+        return CaseInsensitiveDict()
 
     @property
     def all_combined_headers(self) -> Mapping[DeviceOrServiceType, CaseInsensitiveDict]:
