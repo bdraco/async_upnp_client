@@ -254,9 +254,9 @@ def headers_differ_from_existing_advertisement(
     ssdp_device: SsdpDevice, dst: DeviceOrServiceType, headers: CaseInsensitiveDict
 ) -> bool:
     """Compare against existing advertisement headers to see if anything interesting has changed."""
-    if dst not in ssdp_device.advertisement_headers:
+    headers_old = ssdp_device.advertisement_headers.get(dst, _SENTINEL)
+    if headers_old is _SENTINEL:
         return False
-    headers_old = ssdp_device.advertisement_headers[dst]
     return same_headers_differ(headers_old, headers)
 
 
@@ -264,9 +264,9 @@ def headers_differ_from_existing_search(
     ssdp_device: SsdpDevice, dst: DeviceOrServiceType, headers: CaseInsensitiveDict
 ) -> bool:
     """Compare against existing search headers to see if anything interesting has changed."""
-    if dst not in ssdp_device.search_headers:
+    headers_old = ssdp_device.search_headers.get(dst, _SENTINEL)
+    if headers_old is _SENTINEL:
         return False
-    headers_old = ssdp_device.search_headers[dst]
     return same_headers_differ(headers_old, headers)
 
 
