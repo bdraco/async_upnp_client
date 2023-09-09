@@ -468,6 +468,7 @@ class SsdpSearchResponder:
 
         self._transport: Optional[DatagramTransport] = None
         self._response_socket: Optional[socket.socket] = None
+        self._loop = asyncio.get_running_loop()
 
     def _on_connect(self, transport: DatagramTransport) -> None:
         """Handle on connect."""
@@ -495,7 +496,6 @@ class SsdpSearchResponder:
                 "Received M-SEARCH from: %s, headers: %s", remote_addr, headers
             )
 
-        loop = asyncio.get_running_loop()
         mx_header = headers.get_lower("mx")
         if mx_header is not None:
             try:
@@ -504,9 +504,9 @@ class SsdpSearchResponder:
                     _LOGGER.debug("Deferring response for %d seconds", delay)
             except ValueError:
                 delay = 0
-            loop.call_later(delay, self._deferred_on_data, headers)
+            self._loop.call_later(delay, self._deferred_on_data, headers)
         else:
-            loop.call_soon(self._deferred_on_data, headers)
+            self._loop.call_soon(self._deferred_on_data, headers)
 
     def _deferred_on_data(self, headers: CaseInsensitiveDict) -> None:
         # Determine how we should respond, page 1.3.2 of UPnP-arch-DeviceArchitecture-v2.0.
