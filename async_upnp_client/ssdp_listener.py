@@ -257,6 +257,8 @@ def headers_differ_from_existing_advertisement(
     headers_old = ssdp_device.advertisement_headers.get(dst, _SENTINEL)
     if headers_old is _SENTINEL:
         return False
+    if TYPE_CHECKING:
+        assert isinstance(headers_old, CaseInsensitiveDict)
     return same_headers_differ(headers_old, headers)
 
 
@@ -267,6 +269,8 @@ def headers_differ_from_existing_search(
     headers_old = ssdp_device.search_headers.get(dst, _SENTINEL)
     if headers_old is _SENTINEL:
         return False
+    if TYPE_CHECKING:
+        assert isinstance(headers_old, CaseInsensitiveDict)
     return same_headers_differ(headers_old, headers)
 
 
