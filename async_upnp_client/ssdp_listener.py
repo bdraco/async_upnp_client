@@ -9,7 +9,17 @@ from contextlib import suppress
 from datetime import datetime, timedelta
 from functools import lru_cache
 from ipaddress import ip_address
-from typing import Any, Callable, Coroutine, Dict, KeysView, Mapping, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    KeysView,
+    Mapping,
+    Optional,
+    Tuple,
+)
 from urllib.parse import urlparse
 
 from async_upnp_client.advertisement import SsdpAdvertisementListener
@@ -166,12 +176,19 @@ class SsdpDevice:
             device_or_service_type, _SENTINEL
         )
         if search_headers is not _SENTINEL and advertisement_headers is not _SENTINEL:
+            if TYPE_CHECKING:
+                assert isinstance(search_headers, CaseInsensitiveDict)
+                assert isinstance(advertisement_headers, CaseInsensitiveDict)
             header_dict = search_headers.combine(advertisement_headers)
             del header_dict["_source"]
             return header_dict
         if search_headers is not _SENTINEL:
+            if TYPE_CHECKING:
+                assert isinstance(search_headers, CaseInsensitiveDict)
             return search_headers
         if advertisement_headers is not _SENTINEL:
+            if TYPE_CHECKING:
+                assert isinstance(advertisement_headers, CaseInsensitiveDict)
             return advertisement_headers
         return CaseInsensitiveDict()
 
