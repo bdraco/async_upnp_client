@@ -171,8 +171,8 @@ class SsdpDevice:
         device_or_service_type: DeviceOrServiceType,
     ) -> CaseInsensitiveDict:
         """Get headers from search and advertisement for a given device- or service type.
-        
-        If there are both search and advertisement headers, 
+
+        If there are both search and advertisement headers,
         the search headers are combined with the advertisement headers and a new
         CaseInsensitiveDict is returned.
 
@@ -225,7 +225,6 @@ def same_headers_differ(
     """Compare headers present in both to see if anything interesting has changed."""
     current_headers_dict = current_headers.as_dict()
     new_headers_dict = new_headers.as_dict()
-
     new_headers_case_map = new_headers.case_map()
     current_headers_case_map = current_headers.case_map()
 
@@ -235,6 +234,7 @@ def same_headers_differ(
         ) or lower_header in IGNORED_HEADERS:
             continue
         new_header = new_headers_case_map.get(lower_header, _SENTINEL)
+
         if new_header is not _SENTINEL:
             current_value = current_headers_dict[current_header]
             new_value = new_headers_dict[new_header]  # type: ignore[index]
