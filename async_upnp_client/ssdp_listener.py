@@ -161,13 +161,15 @@ class SsdpDevice:
         device_or_service_type: DeviceOrServiceType,
     ) -> CaseInsensitiveDict:
         """Get headers from search and advertisement for a given device- or service type."""
-        search_headers = self.search_headers.get(device_or_service_type)
-        advertisement_headers = self.advertisement_headers.get(device_or_service_type)
-        if search_headers and advertisement_headers:
+        search_headers = self.search_headers.get(device_or_service_type, _SENTINEL)
+        advertisement_headers = self.advertisement_headers.get(
+            device_or_service_type, _SENTINEL
+        )
+        if search_headers is not _SENTINEL and advertisement_headers is not _SENTINEL:
             header_dict = search_headers.combine(advertisement_headers)
-        elif search_headers:
+        elif search_headers is not _SENTINEL:
             header_dict = search_headers.copy()
-        elif advertisement_headers:
+        elif advertisement_headers is not _SENTINEL:
             header_dict = advertisement_headers.copy()
         else:
             return CaseInsensitiveDict()
