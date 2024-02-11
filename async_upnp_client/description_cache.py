@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Optional, Tuple, Union, cast
 
 import aiohttp
 import defusedxml.ElementTree as DET
+from yarl import URL
 
 from async_upnp_client.client import UpnpRequester
 from async_upnp_client.exceptions import UpnpResponseError
@@ -103,10 +104,11 @@ class DescriptionCache:
 
     async def _async_fetch_description(self, location: str) -> Optional[str]:
         """Download a description from location."""
+        url = URL(location)
         try:
             for _ in range(2):
                 status, headers, body = await self._requester.async_http_request(
-                    "GET", location
+                    "GET", url
                 )
                 if status != 200:
                     raise UpnpResponseError(status=status, headers=headers)

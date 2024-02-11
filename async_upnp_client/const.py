@@ -18,6 +18,8 @@ from typing import (
 )
 from xml.etree import ElementTree as ET
 
+from yarl import URL
+
 from async_upnp_client.utils import parse_date_time, require_tzinfo
 
 IPvXAddress = Union[IPv4Address, IPv6Address]  # pylint: disable=invalid-name
@@ -105,7 +107,7 @@ class DeviceIcon(NamedTuple):
     width: int
     height: int
     depth: int
-    url: str
+    url: URL
 
 
 class DeviceInfo(NamedTuple):
@@ -123,7 +125,7 @@ class DeviceInfo(NamedTuple):
     udn: str
     upc: Optional[str]
     presentation_url: Optional[str]
-    url: str
+    url: URL
     icons: List[DeviceIcon]
     xml: ET.Element
 

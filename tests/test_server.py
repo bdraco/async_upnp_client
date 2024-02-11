@@ -230,7 +230,12 @@ async def test_init(upnp_server: Any) -> None:
     resp = await http_client.get("/device.xml")
     assert resp.status == 200
     data = await resp.text()
-    assert data == read_file("server/device.xml").strip()
+    expected = read_file("server/device.xml").strip()
+    import pprint
+
+    pprint.pprint(["data", data])
+    pprint.pprint(["expected", expected])
+    assert data == expected
 
 
 @pytest.mark.asyncio

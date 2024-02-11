@@ -8,8 +8,7 @@ from abc import ABC
 from datetime import timedelta
 from http import HTTPStatus
 from ipaddress import ip_address
-from typing import Dict, Mapping, Optional, Set, Tuple, Type, Union
-from urllib.parse import urlparse
+from typing import TYPE_CHECKING, Dict, Mapping, Optional, Set, Tuple, Type, Union
 
 import defusedxml.ElementTree as DET
 
@@ -186,10 +185,13 @@ class UpnpEventHandler:
         )
 
         # do SUBSCRIBE request
+        host = service.event_sub_url.host
+        if TYPE_CHECKING:
+            assert host is not None
         headers = {
             "NT": "upnp:event",
             "TIMEOUT": "Second-" + str(timeout.seconds),
-            "HOST": urlparse(service.event_sub_url).netloc,
+            "HOST": host,
             "CALLBACK": f"<{self.callback_url}>",
         }
         response_status, response_headers, _ = await self._requester.async_http_request(
@@ -236,8 +238,11 @@ class UpnpEventHandler:
     ) -> Tuple[ServiceId, timedelta]:
         """Perform only a resubscribe, caller can retry subscribe if this fails."""
         # do SUBSCRIBE request
+        host = service.event_sub_url.host
+        if TYPE_CHECKING:
+            assert host is not None
         headers = {
-            "HOST": urlparse(service.event_sub_url).netloc,
+            "HOST": host,
             "SID": sid,
             "TIMEOUT": "Second-" + str(timeout.total_seconds()),
         }
@@ -341,8 +346,11 @@ class UpnpEventHandler:
         del self._subscriptions[sid]
 
         # do UNSUBSCRIBE request
+        host = service.event_sub_url.host
+        if TYPE_CHECKING:
+            assert host is not None
         headers = {
-            "HOST": urlparse(service.event_sub_url).netloc,
+            "HOST": host,
             "SID": sid,
         }
         response_status, response_headers, _ = await self._requester.async_http_request(

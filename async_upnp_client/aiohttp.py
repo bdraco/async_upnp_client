@@ -5,7 +5,7 @@ import asyncio
 import logging
 from asyncio.events import AbstractEventLoop, AbstractServer
 from ipaddress import ip_address
-from typing import Dict, Mapping, Optional, Tuple
+from typing import Dict, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import aiohttp.web
@@ -15,6 +15,7 @@ from aiohttp import (
     ClientResponseError,
     ClientSession,
 )
+from yarl import URL
 
 from async_upnp_client.client import UpnpRequester
 from async_upnp_client.const import AddressTupleVXType, IPvXAddress
@@ -31,23 +32,23 @@ _LOGGER = logging.getLogger(__name__)
 _LOGGER_TRAFFIC_UPNP = logging.getLogger("async_upnp_client.traffic.upnp")
 
 
-def _fixed_host_header(url: str) -> Dict[str, str]:
+def _fixed_host_header(url: Union[str, URL]) -> Dict[str, str]:
     """Strip scope_id from IPv6 host, if needed."""
-    if "%" not in url:
+    if isinstance(url, str):
+        url = URL(url)
+
+    host = url.host
+    if not host or "%" not in host:
         return {}
 
-    url_parts = urlparse(url)
-    if url_parts.hostname and "%" in url_parts.hostname:
-        idx = url_parts.hostname.rindex("%")
-        fixed_hostname = url_parts.hostname[:idx]
-        if ":" in fixed_hostname:
-            fixed_hostname = f"[{fixed_hostname}]"
-        host = (
-            f"{fixed_hostname}:{url_parts.port}" if url_parts.port else fixed_hostname
-        )
-        return {"Host": host}
-
-    return {}
+    idx = host.rindex("%")
+    fixed_hostname = host[:idx]
+    if ":" in fixed_hostname:
+        fixed_hostname = f"[{fixed_hostname}]"
+    host = (
+        f"{fixed_hostname}:{url.port}" if not url.is_default_port() else fixed_hostname
+    )
+    return {"Host": host}
 
 
 class AiohttpRequester(UpnpRequester):
@@ -65,7 +66,7 @@ class AiohttpRequester(UpnpRequester):
     async def async_http_request(
         self,
         method: str,
-        url: str,
+        url: Union[str, URL],
         headers: Optional[Mapping[str, str]] = None,
         body: Optional[str] = None,
     ) -> Tuple[int, Mapping, str]:
@@ -158,7 +159,7 @@ class AiohttpSessionRequester(UpnpRequester):
     async def async_http_request(
         self,
         method: str,
-        url: str,
+        url: Union[str, URL],
         headers: Optional[Mapping[str, str]] = None,
         body: Optional[str] = None,
     ) -> Tuple[int, Mapping[str, str], str]:
@@ -180,7 +181,7 @@ class AiohttpSessionRequester(UpnpRequester):
     async def _async_http_request(
         self,
         method: str,
-        url: str,
+        url: Union[str, URL],
         headers: Optional[Mapping[str, str]] = None,
         body: Optional[str] = None,
     ) -> Tuple[int, Mapping[str, str], str]:

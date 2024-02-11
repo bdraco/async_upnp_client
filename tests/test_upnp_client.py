@@ -6,6 +6,7 @@ from typing import MutableMapping
 
 import defusedxml.ElementTree as DET
 import pytest
+from yarl import URL
 
 from async_upnp_client.client import UpnpStateVariable
 from async_upnp_client.client_factory import UpnpFactory
@@ -574,9 +575,9 @@ class TestUpnpService:
         base_url = "http://dlna_dmr:1234"
         assert service
         assert service.service_type == "urn:schemas-upnp-org:service:RenderingControl:1"
-        assert service.control_url == base_url + "/upnp/control/RenderingControl1"
-        assert service.event_sub_url == base_url + "/upnp/event/RenderingControl1"
-        assert service.scpd_url == base_url + "/RenderingControl_1.xml"
+        assert service.control_url == URL(base_url + "/upnp/control/RenderingControl1")
+        assert service.event_sub_url == URL(base_url + "/upnp/event/RenderingControl1")
+        assert service.scpd_url == URL(base_url + "/RenderingControl_1.xml")
 
     @pytest.mark.asyncio
     async def test_state_variables_actions(self) -> None:

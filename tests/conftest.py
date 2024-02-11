@@ -5,7 +5,9 @@ import asyncio
 import os.path
 from collections import deque
 from copy import deepcopy
-from typing import Deque, Mapping, MutableMapping, Optional, Tuple, cast
+from typing import Deque, Mapping, MutableMapping, Optional, Tuple, Union, cast
+
+from yarl import URL
 
 from async_upnp_client.client import UpnpRequester
 from async_upnp_client.const import AddressTupleVXType
@@ -38,7 +40,7 @@ class UpnpTestRequester(UpnpRequester):
     async def async_http_request(
         self,
         method: str,
-        url: str,
+        url: Union[str, URL],
         headers: Optional[Mapping[str, str]] = None,
         body: Optional[str] = None,
     ) -> Tuple[int, Mapping, str]:
@@ -50,7 +52,7 @@ class UpnpTestRequester(UpnpRequester):
             if exception is not None:
                 raise exception
 
-        key = (method, url)
+        key = (method, str(url))
         if key not in self.response_map:
             raise KeyError(f"Request not in response map: {key}")
 

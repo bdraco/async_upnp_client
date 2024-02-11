@@ -182,7 +182,7 @@ class UpnpProfileDevice:
             )
             self._icon = icons[0].url
 
-        return self._icon
+        return str(self._icon)
 
     def _service(self, service_type_abbreviation: str) -> Optional[UpnpService]:
         """Get UpnpService by service_type or alias."""

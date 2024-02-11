@@ -2,12 +2,12 @@
 """async_upnp_client.client_factory module."""
 
 import logging
-import urllib.parse
 from typing import Any, Dict, List, Optional, Sequence
 from xml.etree import ElementTree as ET
 
 import defusedxml.ElementTree as DET
 import voluptuous as vol
+from yarl import URL
 
 from async_upnp_client.client import (
     UpnpAction,
@@ -69,17 +69,18 @@ class UpnpFactory:
     ) -> UpnpDevice:
         """Create a UpnpDevice, with all of it UpnpServices."""
         _LOGGER.debug("Creating device, description_url: %s", description_url)
-        root_el = await self._async_get(description_url)
+        description_url_url = URL(description_url)
+        root_el = await self._async_get(description_url_url)
 
         # get root device
         device_el = root_el.find("./device:device", NS)
         if device_el is None:
             raise UpnpXmlContentError("Could not find device element")
 
-        return await self._async_create_device(device_el, description_url)
+        return await self._async_create_device(device_el, description_url_url)
 
     async def _async_create_device(
-        self, device_el: ET.Element, description_url: str
+        self, device_el: ET.Element, description_url: URL
     ) -> UpnpDevice:
         """Create a device."""
         device_info = self._parse_device_el(device_el, description_url)
@@ -104,13 +105,14 @@ class UpnpFactory:
         return UpnpDevice(self.requester, device_info, services, embedded_devices)
 
     def _parse_device_el(
-        self, device_desc_el: ET.Element, description_url: str
+        self, device_desc_el: ET.Element, description_url: URL
     ) -> DeviceInfo:
         """Parse device description XML."""
         icons = []
         for icon_el in device_desc_el.iterfind("./device:iconList/device:icon", NS):
-            icon_url = icon_el.findtext("./device:url", "", NS)
-            icon_url = absolute_url(description_url, icon_url)
+            icon_url = absolute_url(
+                description_url, icon_el.findtext("./device:url", "", NS)
+            )
             icon = DeviceIcon(
                 mimetype=icon_el.findtext("./device:mimetype", "", NS),
                 width=int(icon_el.findtext("./device:width", 0, NS)),
@@ -145,11 +147,12 @@ class UpnpFactory:
         )
 
     async def _async_create_service(
-        self, service_description_el: ET.Element, base_url: str
+        self, service_description_el: ET.Element, base_url: URL
     ) -> UpnpService:
         """Retrieve the SCPD for a service and create a UpnpService from it."""
-        scpd_url = service_description_el.findtext("device:SCPDURL", None, NS)
-        scpd_url = urllib.parse.urljoin(base_url, scpd_url)
+        scpd_url = base_url.join(
+            URL(service_description_el.findtext("device:SCPDURL", None, NS) or "")
+        )
 
         try:
             scpd_el = await self._async_get(scpd_url)
@@ -385,7 +388,7 @@ class UpnpFactory:
 
         return ActionInfo(name=action_name, arguments=args, xml=action_el)
 
-    async def _async_get(self, url: str) -> ET.Element:
+    async def _async_get(self, url: URL) -> ET.Element:
         """Get a url."""
         (
             status_code,

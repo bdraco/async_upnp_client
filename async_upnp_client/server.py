@@ -956,12 +956,17 @@ class UpnpXmlSerializer:
 
         service_list_el = ET.SubElement(device_el, "serviceList")
         for service in device.services.values():
+            import pprint
+
+            pprint.pprint(
+                [service, service._service_info.control_url, service._service_info.event_sub_url, service._service_info.scpd_url]
+            )
             service_el = ET.SubElement(service_list_el, "service")
             ET.SubElement(service_el, "serviceType").text = service.service_type
             ET.SubElement(service_el, "serviceId").text = service.service_id
-            ET.SubElement(service_el, "controlURL").text = service.control_url
-            ET.SubElement(service_el, "eventSubURL").text = service.event_sub_url
-            ET.SubElement(service_el, "SCPDURL").text = service.scpd_url
+            ET.SubElement(service_el, "controlURL").text = str(service.control_url)
+            ET.SubElement(service_el, "eventSubURL").text = str(service.event_sub_url)
+            ET.SubElement(service_el, "SCPDURL").text = str(service.scpd_url)
 
         device_list_el = ET.SubElement(device_el, "deviceList")
         for embedded_device in device.embedded_devices.values():
@@ -1349,19 +1354,20 @@ class UpnpServer:
         for service in self._device.all_services:
             service = cast(UpnpServerService, service)
             app.router.add_get(
-                service.SERVICE_DEFINITION.scpd_url, partial(to_xml, service)
+                str(service.SERVICE_DEFINITION.scpd_url), partial(to_xml, service)
             )
             app.router.add_post(
-                service.SERVICE_DEFINITION.control_url, partial(action_handler, service)
+                str(service.SERVICE_DEFINITION.control_url),
+                partial(action_handler, service),
             )
             app.router.add_route(
                 "SUBSCRIBE",
-                service.SERVICE_DEFINITION.event_sub_url,
+                str(service.SERVICE_DEFINITION.event_sub_url),
                 partial(subscribe_handler, service),
             )
             app.router.add_route(
                 "UNSUBSCRIBE",
-                service.SERVICE_DEFINITION.event_sub_url,
+                str(service.SERVICE_DEFINITION.event_sub_url),
                 partial(unsubscribe_handler, service),
             )
 

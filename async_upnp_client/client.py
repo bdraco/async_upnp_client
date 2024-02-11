@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """async_upnp_client.client module."""
 
-# pylint: disable=too-many-lines
-
 import logging
-import urllib.parse
 from abc import ABC
 from datetime import datetime, timezone
+
+# pylint: disable=too-many-lines
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Generic,
@@ -18,12 +18,14 @@ from typing import (
     Set,
     Tuple,
     TypeVar,
+    Union,
 )
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 
 import defusedxml.ElementTree as DET
 import voluptuous as vol
+from yarl import URL
 
 from async_upnp_client.const import (
     NS,
@@ -62,7 +64,7 @@ class UpnpRequester(ABC):
     async def async_http_request(
         self,
         method: str,
-        url: str,
+        url: Union[str, URL],
         headers: Optional[Mapping[str, str]] = None,
         body: Optional[str] = None,
     ) -> Tuple[int, Mapping[str, str], str]:
@@ -268,7 +270,7 @@ class UpnpDevice:
         return self.device_info.presentation_url
 
     @property
-    def device_url(self) -> str:
+    def device_url(self) -> URL:
         """Get the URL of this device."""
         return self.device_info.url
 
@@ -364,28 +366,19 @@ class UpnpService:
         return self._service_info.service_id
 
     @property
-    def scpd_url(self) -> str:
+    def scpd_url(self) -> URL:
         """Get full SCPD-url for this UpnpService."""
-        url: str = urllib.parse.urljoin(
-            self.device.device_url, self._service_info.scpd_url
-        )
-        return url
+        return self.device.device_url.join(URL(self._service_info.scpd_url))
 
     @property
-    def control_url(self) -> str:
+    def control_url(self) -> URL:
         """Get full control-url for this UpnpService."""
-        url: str = urllib.parse.urljoin(
-            self.device.device_url, self._service_info.control_url
-        )
-        return url
+        return self.device.device_url.join(URL(self._service_info.control_url))
 
     @property
-    def event_sub_url(self) -> str:
+    def event_sub_url(self) -> URL:
         """Get full event sub-url for this UpnpService."""
-        url: str = urllib.parse.urljoin(
-            self.device.device_url, self._service_info.event_sub_url
-        )
-        return url
+        return self.device.device_url.join(URL(self._service_info.event_sub_url))
 
     @property
     def xml(self) -> ET.Element:
@@ -676,7 +669,7 @@ class UpnpAction:
         )
         return response_args
 
-    def create_request(self, **kwargs: Any) -> Tuple[str, Mapping[str, str], str]:
+    def create_request(self, **kwargs: Any) -> Tuple[URL, Mapping[str, str], str]:
         """Create headers and headers for this to-be-called UpnpAction."""
         # build URL
         control_url = self.service.control_url
@@ -698,9 +691,12 @@ class UpnpAction:
 
         # construct SOAP header
         soap_action = f"{service_type}#{self.name}"
+        host = control_url.host
+        if TYPE_CHECKING:
+            assert host is not None
         headers = {
             "SOAPAction": f'"{soap_action}"',
-            "Host": urllib.parse.urlparse(control_url).netloc,
+            "Host": host,
             "Content-Type": 'text/xml; charset="utf-8"',
         }
 

@@ -29,6 +29,7 @@ from xml.sax.xmlreader import AttributesImpl
 
 from defusedxml.sax import parseString
 from didl_lite import didl_lite
+from yarl import URL
 
 from async_upnp_client.client import UpnpService, UpnpStateVariable
 from async_upnp_client.const import MIME_TO_UPNP_CLASS_MAPPING
@@ -1177,7 +1178,7 @@ class DmrDevice(ConnectionManagerMixin, UpnpProfileDevice):
         return self._get_current_track_meta_data("channel_number")
 
     @property
-    def media_image_url(self) -> Optional[str]:
+    def media_image_url(self) -> Optional[URL]:
         """Image url of current playing media."""
         state_var = self._state_variable("AVT", "CurrentTrackMetaData")
         if state_var is None:
@@ -1344,7 +1345,7 @@ class DmsDevice(ConnectionManagerMixin, UpnpProfileDevice):
             )
             self.__did_first_update = True
 
-    def get_absolute_url(self, url: str) -> str:
+    def get_absolute_url(self, url: str) -> URL:
         """Resolve a URL returned by the device into an absolute URL."""
         return absolute_url(self.device.device_url, url)
 
